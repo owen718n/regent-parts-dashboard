@@ -60,6 +60,7 @@ function App() {
   const [importInfo, setImportInfo] = React.useState<ImportInfo | null>(null);
 
   const [selectedModel, setSelectedModel] = React.useState('ALL');
+  const [selectedFamily, setSelectedFamily] = React.useState('ALL');
   const [selectedSource, setSelectedSource] = React.useState('ALL');
   const [keyword, setKeyword] = React.useState('');
 
@@ -125,8 +126,18 @@ function App() {
   const sources = unique(parts.map(p => p.source || 'Unknown'));
   const families = unique(models.map(m => m.family));
 
+
+  const familyModels = selectedFamily === 'ALL'
+    ? []
+    : models.filter(m => m.family === selectedFamily).map(m => m.modelCode);
+
+  const familyModelSet = new Set(familyModels);
+
   const filteredBom = bomItems.filter(item => {
-    const okModel = selectedModel === 'ALL' || item.model === selectedModel;
+    const okModel =
+      selectedFamily === 'ALL'
+        ? selectedModel === 'ALL' || item.model === selectedModel
+        : familyModelSet.has(item.model);
     const okSource = selectedSource === 'ALL' || (item.source || 'Unknown') === selectedSource;
 
     const k = keyword.trim().toLowerCase();
@@ -137,6 +148,41 @@ function App() {
 
     return okModel && okSource && okKeyword;
   });
+
+  const familyAveragedBom = React.useMemo(() => {
+    if (selectedFamily === 'ALL') return [];
+
+    const groupedByPart = new Map<string, Map<string, BomItem>>();
+
+    filteredBom.forEach(item => {
+      const qtyNumber = Number(item.qty);
+      if (!Number.isFinite(qtyNumber)) return;
+
+      const partKey = item.partId || item.sapCode || item.description || 'UNKNOWN';
+      if (!groupedByPart.has(partKey)) groupedByPart.set(partKey, new Map());
+
+      const modelMap = groupedByPart.get(partKey)!;
+      const existing = modelMap.get(item.model);
+      if (existing) {
+        existing.qty = Number(existing.qty) + qtyNumber;
+      } else {
+        modelMap.set(item.model, { ...item, qty: qtyNumber });
+      }
+    });
+
+    return Array.from(groupedByPart.values())
+      .map(modelMap => {
+        const items = Array.from(modelMap.values());
+        const totalQty = items.reduce((sum, it) => sum + Number(it.qty), 0);
+        const avgQty = totalQty / items.length;
+        return {
+          ...items[0],
+          model: selectedFamily,
+          qty: avgQty.toFixed(1),
+        };
+      })
+      .sort((a, b) => String(a.sapCode || '').localeCompare(String(b.sapCode || '')));
+  }, [filteredBom, selectedFamily]);
 
   const sourceStats = sources.map(source => ({
     source,
@@ -196,9 +242,17 @@ function App() {
         <Card title="车型族">
           <div className="pillbox">
             {families.map(f => (
-              <span className="pill" key={f}>
+              <button
+                type="button"
+                className={`pill ${selectedFamily === f ? 'pill-active' : ''}`}
+                key={f}
+                onClick={() => {
+                  setSelectedFamily(prev => (prev === f ? 'ALL' : f));
+                  setSelectedModel('ALL');
+                }}
+              >
                 {f}
-              </span>
+              </button>
             ))}
           </div>
         </Card>
@@ -208,7 +262,11 @@ function App() {
         <div className="toolbar">
           <label>
             Model
-            <select value={selectedModel} onChange={e => setSelectedModel(e.target.value)}>
+            <select
+              value={selectedModel}
+              onChange={e => setSelectedModel(e.target.value)}
+              disabled={selectedFamily !== 'ALL'}
+            >
               <option value="ALL">All Models</option>
               {models.map(m => (
                 <option key={m.modelCode} value={m.modelCode}>
@@ -244,7 +302,7 @@ function App() {
           <table>
             <thead>
               <tr>
-                <th>Model</th>
+                <th>{selectedFamily === 'ALL' ? 'Model' : '车型族'}</th>
                 <th>SAP Code</th>
                 <th>Description</th>
                 <th>Qty</th>
@@ -255,7 +313,7 @@ function App() {
             </thead>
 
             <tbody>
-              {filteredBom.slice(0, 500).map((item, i) => (
+              {(selectedFamily === 'ALL' ? filteredBom : familyAveragedBom).slice(0, 500).map((item, i) => (
                 <tr key={`${item.partId || item.sapCode}-${item.model}-${i}`}>
                   <td>{item.model}</td>
                   <td>{asText(item.sapCode)}</td>
@@ -273,7 +331,7 @@ function App() {
         </div>
 
         <p className="note">
-          Showing {Math.min(filteredBom.length, 500)} / {filteredBom.length}.
+          Showing {Math.min((selectedFamily === 'ALL' ? filteredBom.length : familyAveragedBom.length), 500)} / {(selectedFamily === 'ALL' ? filteredBom.length : familyAveragedBom.length)}.
           如果数据继续变大，可以改成 Firestore 分页查询。
         </p>
       </section>
