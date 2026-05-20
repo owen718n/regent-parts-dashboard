@@ -1,4 +1,10 @@
-import { collection, getDocs } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "./firebase";
 
 function withId(snapshot: any) {
@@ -26,4 +32,32 @@ export async function getModels() {
 export async function getImports() {
   const snapshot = await getDocs(collection(db, "imports"));
   return withId(snapshot);
+}
+
+export type PartManualFields = Partial<{
+  location: string | null;
+  group: string | null;
+  time: number | null;
+  standard: "Standard" | "Option";
+  hidden: boolean;
+}>;
+
+export async function updatePartManualFields(
+  partId: string,
+  data: PartManualFields
+) {
+  if (!partId) {
+    throw new Error("Missing partId");
+  }
+
+  const cleanData = Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined)
+  );
+
+  const ref = doc(db, "parts", partId);
+
+  await updateDoc(ref, {
+    ...cleanData,
+    manualUpdatedAt: serverTimestamp(),
+  });
 }

@@ -1,18 +1,35 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { Search, Database, Layers, PackageCheck, UploadCloud } from 'lucide-react';
-import { getParts, getBomItems, getModels, getImports } from './firestoreApi';
+import {
+  Search,
+  Database,
+  Layers,
+  PackageCheck,
+  UploadCloud,
+  Clock3,
+  EyeOff,
+  RotateCcw,
+} from 'lucide-react';
+import {
+  getParts,
+  getBomItems,
+  getModels,
+  getImports,
+  updatePartManualFields,
+  type PartManualFields,
+} from './firestoreApi';
 import './style.css';
 
 type Part = {
   id: string;
   sapCode: string | null;
   description: string | null;
-  group: string | null;
-  location: string | null;
+  group?: string | null;
+  location?: string | null;
   source: string | null;
-  standard: string | null;
-  time: string | number | null;
+  standard?: string | null;
+  time?: string | number | null;
+  hidden?: boolean;
   originalRow: number;
 };
 
@@ -24,8 +41,8 @@ type BomItem = {
   qty: number | string;
   source: string | null;
   description: string | null;
-  location: string | null;
-  group: string | null;
+  location?: string | null;
+  group?: string | null;
   originalRow: number;
 };
 
@@ -47,15 +64,29 @@ type ImportInfo = {
 
 type FamilyAverageBomItem = {
   key: string;
+  partId: string;
   sapCode: string | null;
   description: string | null;
   source: string | null;
   location: string | null;
   group: string | null;
+  standard: string;
+  time: number | null;
   totalQty: number;
   averageQty: number;
   usedInModels: string;
 };
+
+const LOCATION_OPTIONS = [
+  'Chassis',
+  'Plumbing',
+  'Electrical',
+  'Internal',
+  'Roof',
+  'External',
+];
+
+const STANDARD_OPTIONS = ['Standard', 'Option'] as const;
 
 function unique<T>(items: T[]) {
   return Array.from(new Set(items)).filter(Boolean) as T[];
@@ -70,8 +101,40 @@ function toNumber(v: unknown) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function toNullableNumber(v: unknown) {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
 function getModelFamily(modelCode: string) {
   return String(modelCode || '').trim().slice(0, 3).toUpperCase();
+}
+
+function getPartTime(part?: Part | null) {
+  return toNullableNumber(part?.time);
+}
+
+function getPartStandard(part?: Part | null) {
+  const value = String(part?.standard || '').trim();
+  return value === 'Option' ? 'Option' : 'Standard';
+}
+
+function formatSeconds(seconds: number) {
+  const safe = Math.max(0, seconds || 0);
+  const hours = safe / 3600;
+
+  if (hours >= 1) {
+    return `${hours.toFixed(1)} h`;
+  }
+
+  const minutes = safe / 60;
+
+  if (minutes >= 1) {
+    return `${minutes.toFixed(1)} min`;
+  }
+
+  return `${safe.toFixed(0)} sec`;
 }
 
 function App() {
@@ -84,9 +147,19 @@ function App() {
   const [selectedSource, setSelectedSource] = React.useState('ALL');
   const [selectedFamily, setSelectedFamily] = React.useState<string | null>(null);
   const [keyword, setKeyword] = React.useState('');
+  const [showHidden, setShowHidden] = React.useState(false);
 
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [savingParts, setSavingParts] = React.useState<Record<string, boolean>>(
+    {}
+  );
+
+  const saveTimersRef = React.useRef<
+    Record<string, ReturnType<typeof setTimeout>>
+  >({});
+
+  const pendingPatchesRef = React.useRef<Record<string, PartManualFields>>({});
 
   React.useEffect(() => {
     async function loadFirestoreData() {
@@ -116,7 +189,94 @@ function App() {
     }
 
     loadFirestoreData();
+
+    return () => {
+      Object.values(saveTimersRef.current).forEach(timer => clearTimeout(timer));
+    };
   }, []);
+
+  function queuePartUpdate(partId: string, patch: PartManualFields) {
+    if (!partId) return;
+
+    setParts(prev =>
+      prev.map(part => (part.id === partId ? { ...part, ...patch } : part))
+    );
+
+    pendingPatchesRef.current[partId] = {
+      ...(pendingPatchesRef.current[partId] || {}),
+      ...patch,
+    };
+
+    if (saveTimersRef.current[partId]) {
+      clearTimeout(saveTimersRef.current[partId]);
+    }
+
+    saveTimersRef.current[partId] = setTimeout(async () => {
+      const data = pendingPatchesRef.current[partId];
+
+      delete pendingPatchesRef.current[partId];
+
+      setSavingParts(prev => ({ ...prev, [partId]: true }));
+
+      try {
+        await updatePartManualFields(partId, data);
+      } catch (err) {
+        console.error('Save failed:', err);
+        setError('Failed to save changes to Firestore. Please check Firestore rules.');
+      } finally {
+        setSavingParts(prev => ({ ...prev, [partId]: false }));
+      }
+    }, 650);
+  }
+
+  const partById = React.useMemo(() => {
+    const map = new Map<string, Part>();
+
+    parts.forEach(part => {
+      map.set(part.id, part);
+    });
+
+    return map;
+  }, [parts]);
+
+  const partBySapCode = React.useMemo(() => {
+    const map = new Map<string, Part>();
+
+    parts.forEach(part => {
+      if (part.sapCode) {
+        map.set(String(part.sapCode), part);
+      }
+    });
+
+    return map;
+  }, [parts]);
+
+  function getPartForBom(item: BomItem) {
+    return (
+      partById.get(item.partId) ||
+      partBySapCode.get(String(item.sapCode || '')) ||
+      null
+    );
+  }
+
+  const visibleParts = React.useMemo(
+    () => parts.filter(part => !part.hidden),
+    [parts]
+  );
+
+  const hiddenParts = React.useMemo(
+    () => parts.filter(part => part.hidden),
+    [parts]
+  );
+
+  const visibleBomItems = React.useMemo(
+    () =>
+      bomItems.filter(item => {
+        const part = getPartForBom(item);
+        return !part?.hidden;
+      }),
+    [bomItems, partById, partBySapCode]
+  );
 
   if (loading) {
     return (
@@ -146,18 +306,10 @@ function App() {
     );
   }
 
-  const sources = unique(parts.map(p => p.source || 'Unknown'));
+  const sources = unique(visibleParts.map(p => p.source || 'Unknown')).sort();
 
-  /**
-   * 车型族不再依赖 models.family 字段。
-   * 直接从 modelCode 前 3 位提取：
-   * SRC14 / SRC16 / SRC19 -> SRC
-   * SRH16 / SRH19 -> SRH
-   */
   const families = unique(
-    models
-      .map(m => getModelFamily(m.modelCode))
-      .filter(Boolean)
+    models.map(m => getModelFamily(m.modelCode)).filter(Boolean)
   ).sort();
 
   const selectedFamilyModels = selectedFamily
@@ -167,54 +319,57 @@ function App() {
         .sort()
     : [];
 
-  const filteredBom = bomItems.filter(item => {
+  const filteredBom = visibleBomItems.filter(item => {
+    const part = getPartForBom(item);
+
     const okModel = selectedModel === 'ALL' || item.model === selectedModel;
-    const okSource = selectedSource === 'ALL' || (item.source || 'Unknown') === selectedSource;
+    const okSource =
+      selectedSource === 'ALL' || (part?.source || item.source || 'Unknown') === selectedSource;
 
     const k = keyword.trim().toLowerCase();
+
     const okKeyword =
       !k ||
-      [item.sapCode, item.description, item.location, item.group, item.model]
-        .some(v => String(v || '').toLowerCase().includes(k));
+      [
+        item.sapCode,
+        item.description,
+        part?.location,
+        part?.group,
+        part?.standard,
+        item.model,
+      ].some(v => String(v || '').toLowerCase().includes(k));
 
     return okModel && okSource && okKeyword;
   });
 
-  /**
-   * 点击车型族后的平均 BOM。
-   *
-   * 例：
-   * 点击 SRC
-   * -> 找 SRC 开头的所有车型：SRC14 / SRC16 / SRC17 / SRC19...
-   * -> 找这些车型用到的所有 BOM item
-   * -> 按同一个零件合并
-   * -> averageQty = totalQty / SRC 车型数量
-   *
-   * 没有用到该零件的车型，按 0 参与平均。
-   */
   const familyAverageBom: FamilyAverageBomItem[] = selectedFamily
     ? Object.values(
-        bomItems
+        visibleBomItems
           .filter(item => selectedFamilyModels.includes(item.model))
           .filter(item => {
+            const part = getPartForBom(item);
+
             const okSource =
               selectedSource === 'ALL' ||
-              (item.source || 'Unknown') === selectedSource;
+              (part?.source || item.source || 'Unknown') === selectedSource;
 
             const k = keyword.trim().toLowerCase();
+
             const okKeyword =
               !k ||
-              [item.sapCode, item.description, item.location, item.group, item.model]
-                .some(v => String(v || '').toLowerCase().includes(k));
+              [
+                item.sapCode,
+                item.description,
+                part?.location,
+                part?.group,
+                part?.standard,
+                item.model,
+              ].some(v => String(v || '').toLowerCase().includes(k));
 
             return okSource && okKeyword;
           })
           .reduce((acc, item) => {
-            /**
-             * 优先用 sapCode 合并。
-             * 如果 sapCode 为空，再用 partId。
-             * 如果两者都没有，再用 description。
-             */
+            const part = getPartForBom(item);
             const key = String(item.sapCode || item.partId || item.description || '').trim();
 
             if (!key) return acc;
@@ -224,11 +379,14 @@ function App() {
             if (!acc[key]) {
               acc[key] = {
                 key,
+                partId: part?.id || item.partId,
                 sapCode: item.sapCode,
                 description: item.description,
-                source: item.source,
-                location: item.location,
-                group: item.group,
+                source: part?.source || item.source,
+                location: part?.location || null,
+                group: part?.group || null,
+                standard: getPartStandard(part),
+                time: getPartTime(part),
                 totalQty: 0,
                 usedModelsSet: new Set<string>(),
               };
@@ -237,66 +395,101 @@ function App() {
             acc[key].totalQty += qty;
             acc[key].usedModelsSet.add(item.model);
 
-            /**
-             * 如果某些字段第一条为空，后面有值，则补上。
-             */
+            if (!acc[key].partId && part?.id) acc[key].partId = part.id;
             if (!acc[key].sapCode && item.sapCode) acc[key].sapCode = item.sapCode;
-            if (!acc[key].description && item.description) acc[key].description = item.description;
-            if (!acc[key].source && item.source) acc[key].source = item.source;
-            if (!acc[key].location && item.location) acc[key].location = item.location;
-            if (!acc[key].group && item.group) acc[key].group = item.group;
+            if (!acc[key].description && item.description) {
+              acc[key].description = item.description;
+            }
+            if (!acc[key].source && (part?.source || item.source)) {
+              acc[key].source = part?.source || item.source;
+            }
+            if (!acc[key].location && part?.location) acc[key].location = part.location;
+            if (!acc[key].group && part?.group) acc[key].group = part.group;
+            if (!acc[key].time && getPartTime(part)) acc[key].time = getPartTime(part);
+            acc[key].standard = getPartStandard(part);
 
             return acc;
-          }, {} as Record<string, {
-            key: string;
-            sapCode: string | null;
-            description: string | null;
-            source: string | null;
-            location: string | null;
-            group: string | null;
-            totalQty: number;
-            usedModelsSet: Set<string>;
-          }>)
+          }, {} as Record<string, FamilyAverageBomItem & { usedModelsSet: Set<string> }>)
       )
         .map(item => ({
           key: item.key,
+          partId: item.partId,
           sapCode: item.sapCode,
           description: item.description,
           source: item.source,
           location: item.location,
           group: item.group,
+          standard: item.standard,
+          time: item.time,
           totalQty: item.totalQty,
           averageQty: Number(
             (item.totalQty / Math.max(selectedFamilyModels.length, 1)).toFixed(1)
           ),
           usedInModels: Array.from(item.usedModelsSet).sort().join(', '),
         }))
-        .sort((a, b) => {
-          const codeA = String(a.sapCode || '');
-          const codeB = String(b.sapCode || '');
-          return codeA.localeCompare(codeB);
-        })
+        .sort((a, b) => String(a.sapCode || '').localeCompare(String(b.sapCode || '')))
     : [];
 
   const sourceStats = sources.map(source => ({
     source,
-    count: parts.filter(p => (p.source || 'Unknown') === source).length,
+    count: visibleParts.filter(p => (p.source || 'Unknown') === source).length,
   }));
 
   const modelStats = models
     .map(m => ({
       model: m.modelCode,
-      count: bomItems.filter(b => b.model === m.modelCode).length,
+      count: visibleBomItems.filter(b => b.model === m.modelCode).length,
     }))
     .sort((a, b) => b.count - a.count);
+
+  const modelTimeStats = models
+    .map(model => {
+      const totalSeconds = visibleBomItems
+        .filter(item => item.model === model.modelCode)
+        .reduce((sum, item) => {
+          const part = getPartForBom(item);
+          return sum + toNumber(item.qty) * toNumber(part?.time);
+        }, 0);
+
+      return {
+        model: model.modelCode,
+        totalSeconds,
+      };
+    })
+    .filter(item => item.totalSeconds > 0)
+    .sort((a, b) => b.totalSeconds - a.totalSeconds);
+
+  const familyTimeStats = families
+    .map(family => {
+      const familyModels = models
+        .map(m => m.modelCode)
+        .filter(modelCode => getModelFamily(modelCode) === family);
+
+      const familyTotalSeconds = familyModels.reduce((sum, modelCode) => {
+        const modelTotal = visibleBomItems
+          .filter(item => item.model === modelCode)
+          .reduce((modelSum, item) => {
+            const part = getPartForBom(item);
+            return modelSum + toNumber(item.qty) * toNumber(part?.time);
+          }, 0);
+
+        return sum + modelTotal;
+      }, 0);
+
+      return {
+        family,
+        totalSeconds: familyTotalSeconds,
+        averageSeconds: familyTotalSeconds / Math.max(familyModels.length, 1),
+      };
+    })
+    .filter(item => item.totalSeconds > 0)
+    .sort((a, b) => b.averageSeconds - a.averageSeconds);
 
   const showingCount = selectedFamily
     ? Math.min(familyAverageBom.length, 500)
     : Math.min(filteredBom.length, 500);
 
-  const totalCount = selectedFamily
-    ? familyAverageBom.length
-    : filteredBom.length;
+  const totalCount = selectedFamily ? familyAverageBom.length : filteredBom.length;
 
   return (
     <main>
@@ -306,7 +499,8 @@ function App() {
           <h1>Installation Transfer</h1>
           <p className="subtitle">
             基于 Data5.xlsm 自动转换：parts + bomItems + models + imports。
-            当前页面已经改为从 Firebase Firestore 读取数据。
+            当前页面从 Firebase Firestore 读取数据，并支持在网站上维护 Location、
+            Group、Time、Standard 和 Hidden。
           </p>
         </div>
 
@@ -322,10 +516,10 @@ function App() {
       </section>
 
       <section className="kpis">
-        <Kpi icon={<PackageCheck />} label="Parts" value={parts.length} />
+        <Kpi icon={<PackageCheck />} label="Visible Parts" value={visibleParts.length} />
+        <Kpi icon={<EyeOff />} label="Hidden Parts" value={hiddenParts.length} />
         <Kpi icon={<Layers />} label="Models" value={models.length} />
-        <Kpi icon={<Database />} label="BOM Items" value={bomItems.length} />
-        <Kpi icon={<Search />} label="Sources" value={sources.length} />
+        <Kpi icon={<Database />} label="BOM Items" value={visibleBomItems.length} />
       </section>
 
       <section className="grid two">
@@ -338,7 +532,7 @@ function App() {
                   style={{
                     width: `${Math.max(
                       8,
-                      (s.count / Math.max(parts.length, 1)) * 100
+                      (s.count / Math.max(visibleParts.length, 1)) * 100
                     )}%`,
                   }}
                 />
@@ -384,6 +578,26 @@ function App() {
         </Card>
       </section>
 
+      <section className="grid two">
+        <Card title="Model total installation time">
+          <TimeChart
+            rows={modelTimeStats.slice(0, 12).map(item => ({
+              label: item.model,
+              value: item.totalSeconds,
+            }))}
+          />
+        </Card>
+
+        <Card title="Family average installation time">
+          <TimeChart
+            rows={familyTimeStats.map(item => ({
+              label: item.family,
+              value: item.averageSeconds,
+            }))}
+          />
+        </Card>
+      </section>
+
       <section className="panel">
         <div className="toolbar">
           <label>
@@ -423,7 +637,7 @@ function App() {
           <label className="searchbox">
             Search
             <input
-              placeholder="SAP Code / Description / Location"
+              placeholder="SAP Code / Description / Location / Group"
               value={keyword}
               onChange={e => setKeyword(e.target.value)}
             />
@@ -446,43 +660,86 @@ function App() {
                 <th>SAP Code</th>
                 <th>Description</th>
                 <th>{selectedFamily ? 'Average Qty' : 'Qty'}</th>
-                <th>Source</th>
                 <th>Location</th>
                 <th>Group</th>
+                <th>Time Sec</th>
+                <th>Standard</th>
+                <th>Source</th>
                 {selectedFamily && <th>Used In Models</th>}
+                <th>Action</th>
               </tr>
             </thead>
 
             <tbody>
               {selectedFamily ? (
-                familyAverageBom.slice(0, 500).map((item, i) => (
-                  <tr key={`${item.key}-${i}`}>
-                    <td>{selectedFamily}</td>
-                    <td>{asText(item.sapCode)}</td>
-                    <td>{asText(item.description)}</td>
-                    <td>{item.averageQty.toFixed(1)}</td>
-                    <td>
-                      <span className="tag">{asText(item.source)}</span>
-                    </td>
-                    <td>{asText(item.location)}</td>
-                    <td>{asText(item.group)}</td>
-                    <td>{item.usedInModels}</td>
-                  </tr>
-                ))
+                familyAverageBom.slice(0, 500).map((item, i) => {
+                  const part = partById.get(item.partId);
+                  const partId = part?.id || item.partId;
+
+                  return (
+                    <tr key={`${item.key}-${i}`}>
+                      <td>{selectedFamily}</td>
+                      <td>{asText(item.sapCode)}</td>
+                      <td>{asText(item.description)}</td>
+                      <td>{item.averageQty.toFixed(1)}</td>
+                      <EditableManualCells
+                        part={part}
+                        partId={partId}
+                        saving={!!savingParts[partId]}
+                        onChange={queuePartUpdate}
+                      />
+                      <td>
+                        <span className="tag">{asText(item.source)}</span>
+                      </td>
+                      <td>{item.usedInModels}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="icon-action danger"
+                          onClick={() => queuePartUpdate(partId, { hidden: true })}
+                          disabled={!partId}
+                        >
+                          <EyeOff size={15} />
+                          Hide
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
-                filteredBom.slice(0, 500).map((item, i) => (
-                  <tr key={`${item.partId || item.sapCode}-${item.model}-${i}`}>
-                    <td>{item.model}</td>
-                    <td>{asText(item.sapCode)}</td>
-                    <td>{asText(item.description)}</td>
-                    <td>{asText(item.qty)}</td>
-                    <td>
-                      <span className="tag">{asText(item.source)}</span>
-                    </td>
-                    <td>{asText(item.location)}</td>
-                    <td>{asText(item.group)}</td>
-                  </tr>
-                ))
+                filteredBom.slice(0, 500).map((item, i) => {
+                  const part = getPartForBom(item);
+                  const partId = part?.id || item.partId;
+
+                  return (
+                    <tr key={`${item.partId || item.sapCode}-${item.model}-${i}`}>
+                      <td>{item.model}</td>
+                      <td>{asText(item.sapCode)}</td>
+                      <td>{asText(item.description)}</td>
+                      <td>{asText(item.qty)}</td>
+                      <EditableManualCells
+                        part={part}
+                        partId={partId}
+                        saving={!!savingParts[partId]}
+                        onChange={queuePartUpdate}
+                      />
+                      <td>
+                        <span className="tag">{asText(part?.source || item.source)}</span>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="icon-action danger"
+                          onClick={() => queuePartUpdate(partId, { hidden: true })}
+                          disabled={!partId}
+                        >
+                          <EyeOff size={15} />
+                          Hide
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -492,8 +749,50 @@ function App() {
           Showing {showingCount} / {totalCount}.
           {selectedFamily
             ? ' 当前显示的是车型族平均 BOM。'
-            : ' 如果数据继续变大，可以改成 Firestore 分页查询。'}
+            : ' Hidden parts will not be shown or counted in statistics.'}
         </p>
+      </section>
+
+      <section className="panel">
+        <div className="panel-header">
+          <h2>Hidden parts</h2>
+          <button
+            type="button"
+            className="clear-family"
+            onClick={() => setShowHidden(v => !v)}
+          >
+            {showHidden ? 'Hide hidden list' : 'Show hidden list'}
+          </button>
+        </div>
+
+        {showHidden ? (
+          hiddenParts.length ? (
+            <div className="hidden-list">
+              {hiddenParts.map(part => (
+                <div className="hidden-item" key={part.id}>
+                  <div>
+                    <strong>{asText(part.sapCode)}</strong>
+                    <span>{asText(part.description)}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="icon-action"
+                    onClick={() => queuePartUpdate(part.id, { hidden: false })}
+                  >
+                    <RotateCcw size={15} />
+                    Restore
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="note">No hidden parts.</p>
+          )
+        ) : (
+          <p className="note">
+            Hidden parts are excluded from tables, source stats, BOM counts and time charts.
+          </p>
+        )}
       </section>
 
       <section className="panel">
@@ -515,6 +814,134 @@ function App() {
         </div>
       </section>
     </main>
+  );
+}
+
+function EditableManualCells({
+  part,
+  partId,
+  saving,
+  onChange,
+}: {
+  part?: Part | null;
+  partId: string;
+  saving: boolean;
+  onChange: (partId: string, patch: PartManualFields) => void;
+}) {
+  const location = part?.location || '';
+  const group = part?.group || '';
+  const time = part?.time ?? '';
+  const standard = getPartStandard(part);
+
+  return (
+    <>
+      <td>
+        <select
+          className="cell-select"
+          value={location}
+          onChange={e =>
+            onChange(partId, {
+              location: e.target.value || null,
+            })
+          }
+          disabled={!partId}
+        >
+          <option value="">-</option>
+          {LOCATION_OPTIONS.map(option => (
+            <option value={option} key={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </td>
+
+      <td>
+        <input
+          className="cell-input"
+          value={group}
+          placeholder="Group"
+          onChange={e =>
+            onChange(partId, {
+              group: e.target.value || null,
+            })
+          }
+          disabled={!partId}
+        />
+      </td>
+
+      <td>
+        <input
+          className="cell-input small"
+          value={time}
+          type="number"
+          min="0"
+          step="1"
+          placeholder="sec"
+          onChange={e =>
+            onChange(partId, {
+              time: e.target.value === '' ? null : Number(e.target.value),
+            })
+          }
+          disabled={!partId}
+        />
+      </td>
+
+      <td>
+        <div className="standard-cell">
+          <select
+            className="cell-select"
+            value={standard}
+            onChange={e =>
+              onChange(partId, {
+                standard: e.target.value as 'Standard' | 'Option',
+              })
+            }
+            disabled={!partId}
+          >
+            {STANDARD_OPTIONS.map(option => (
+              <option value={option} key={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          {saving && <span className="saving-dot" title="Saving..." />}
+        </div>
+      </td>
+    </>
+  );
+}
+
+function TimeChart({
+  rows,
+}: {
+  rows: Array<{
+    label: string;
+    value: number;
+  }>;
+}) {
+  const max = Math.max(...rows.map(row => row.value), 1);
+
+  if (!rows.length) {
+    return (
+      <div className="empty-chart">
+        <Clock3 size={22} />
+        <span>No time data yet. Fill Time Sec to generate charts.</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="time-chart">
+      {rows.map(row => (
+        <div className="time-row" key={row.label}>
+          <span>{row.label}</span>
+          <div className="time-bar">
+            <i style={{ width: `${Math.max(6, (row.value / max) * 100)}%` }} />
+          </div>
+          <b>{formatSeconds(row.value)}</b>
+        </div>
+      ))}
+    </div>
   );
 }
 
