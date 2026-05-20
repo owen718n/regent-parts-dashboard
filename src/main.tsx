@@ -527,6 +527,19 @@ function App() {
     .filter(item => item.totalSeconds > 0)
     .sort((a, b) => b.averageSeconds - a.averageSeconds);
 
+  const selectedFamilyModelTimeRows = selectedFamily
+    ? modelTimeStats
+        .filter(item => selectedFamilyModels.includes(item.model))
+        .map(item => ({
+          label: item.model,
+          value: item.totalSeconds,
+        }))
+    : [];
+
+  const modelTimeCardTitle = selectedFamily
+    ? `${selectedFamily} 车型族各具体车型 total installation time`
+    : 'Model total installation time';
+
   const showingCount = selectedFamily
     ? Math.min(familyAverageBom.length, 500)
     : Math.min(filteredBom.length, 500);
@@ -621,12 +634,16 @@ function App() {
       </section>
 
       <section className="grid two">
-        <Card title="Model total installation time">
+        <Card title={modelTimeCardTitle}>
           <TimeChart
-            rows={modelTimeStats.slice(0, 12).map(item => ({
-              label: item.model,
-              value: item.totalSeconds,
-            }))}
+            rows={
+              selectedFamily
+                ? selectedFamilyModelTimeRows
+                : modelTimeStats.slice(0, 12).map(item => ({
+                    label: item.model,
+                    value: item.totalSeconds,
+                  }))
+            }
           />
         </Card>
 
