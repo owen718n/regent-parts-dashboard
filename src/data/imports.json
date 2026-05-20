@@ -1,0 +1,16 @@
+[
+  {
+    "id": "Data5_2026_05_19",
+    "fileName": "Data5.xlsm",
+    "importedAt": "2026-05-20T00:00:00+10:00",
+    "sheetName": "Data",
+    "rowCount": 142,
+    "modelCount": 53,
+    "bomItemCount": 3195,
+    "sourceSummary": {
+      "AU BOM": 17,
+      "Consumable": 25,
+      "Container": 100
+    }
+  }
+]

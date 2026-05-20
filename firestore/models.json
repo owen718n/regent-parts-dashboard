@@ -1,0 +1,320 @@
+[
+  {
+    "id": "SRC14",
+    "modelCode": "SRC14",
+    "family": "SRC",
+    "displayName": "SRC14"
+  },
+  {
+    "id": "SRC16",
+    "modelCode": "SRC16",
+    "family": "SRC",
+    "displayName": "SRC16"
+  },
+  {
+    "id": "SRC17",
+    "modelCode": "SRC17",
+    "family": "SRC",
+    "displayName": "SRC17"
+  },
+  {
+    "id": "SRC18",
+    "modelCode": "SRC18",
+    "family": "SRC",
+    "displayName": "SRC18"
+  },
+  {
+    "id": "SRC19",
+    "modelCode": "SRC19",
+    "family": "SRC",
+    "displayName": "SRC19"
+  },
+  {
+    "id": "SRC19E",
+    "modelCode": "SRC19E",
+    "family": "SRC",
+    "displayName": "SRC19E"
+  },
+  {
+    "id": "SRC20",
+    "modelCode": "SRC20",
+    "family": "SRC",
+    "displayName": "SRC20"
+  },
+  {
+    "id": "SRC20F_2_Bunks",
+    "modelCode": "SRC20F 2 Bunks",
+    "family": "SRC",
+    "displayName": "SRC20F 2 Bunks"
+  },
+  {
+    "id": "SRC21",
+    "modelCode": "SRC21",
+    "family": "SRC",
+    "displayName": "SRC21"
+  },
+  {
+    "id": "SRC21S",
+    "modelCode": "SRC21S",
+    "family": "SRC",
+    "displayName": "SRC21S"
+  },
+  {
+    "id": "SRC22",
+    "modelCode": "SRC22",
+    "family": "SRC",
+    "displayName": "SRC22"
+  },
+  {
+    "id": "SRC22F_2_Bunks",
+    "modelCode": "SRC22F 2 Bunks",
+    "family": "SRC",
+    "displayName": "SRC22F 2 Bunks"
+  },
+  {
+    "id": "SRC22F_3_Bunks",
+    "modelCode": "SRC22F 3 Bunks",
+    "family": "SRC",
+    "displayName": "SRC22F 3 Bunks"
+  },
+  {
+    "id": "SRC22S",
+    "modelCode": "SRC22S",
+    "family": "SRC",
+    "displayName": "SRC22S"
+  },
+  {
+    "id": "SRC24",
+    "modelCode": "SRC24",
+    "family": "SRC",
+    "displayName": "SRC24"
+  },
+  {
+    "id": "SRP14",
+    "modelCode": "SRP14",
+    "family": "SRP",
+    "displayName": "SRP14"
+  },
+  {
+    "id": "SRP17",
+    "modelCode": "SRP17",
+    "family": "SRP",
+    "displayName": "SRP17"
+  },
+  {
+    "id": "SRP18F_2_Bunks",
+    "modelCode": "SRP18F 2 Bunks",
+    "family": "SRP",
+    "displayName": "SRP18F 2 Bunks"
+  },
+  {
+    "id": "SRP19",
+    "modelCode": "SRP19",
+    "family": "SRP",
+    "displayName": "SRP19"
+  },
+  {
+    "id": "SRP19F_2_Bunks",
+    "modelCode": "SRP19F 2 Bunks",
+    "family": "SRP",
+    "displayName": "SRP19F 2 Bunks"
+  },
+  {
+    "id": "SRP20",
+    "modelCode": "SRP20",
+    "family": "SRP",
+    "displayName": "SRP20"
+  },
+  {
+    "id": "SRT18",
+    "modelCode": "SRT18",
+    "family": "SRT",
+    "displayName": "SRT18"
+  },
+  {
+    "id": "SRT18F_2_Bunks",
+    "modelCode": "SRT18F 2 Bunks",
+    "family": "SRT",
+    "displayName": "SRT18F 2 Bunks"
+  },
+  {
+    "id": "SRT19",
+    "modelCode": "SRT19",
+    "family": "SRT",
+    "displayName": "SRT19"
+  },
+  {
+    "id": "SRT20",
+    "modelCode": "SRT20",
+    "family": "SRT",
+    "displayName": "SRT20"
+  },
+  {
+    "id": "SRT22F_2_Bunks",
+    "modelCode": "SRT22F 2 Bunks",
+    "family": "SRT",
+    "displayName": "SRT22F 2 Bunks"
+  },
+  {
+    "id": "SRT22F_3_Bunks",
+    "modelCode": "SRT22F 3 Bunks",
+    "family": "SRT",
+    "displayName": "SRT22F 3 Bunks"
+  },
+  {
+    "id": "SRH13",
+    "modelCode": "SRH13",
+    "family": "SRH",
+    "displayName": "SRH13"
+  },
+  {
+    "id": "SRH14",
+    "modelCode": "SRH14",
+    "family": "SRH",
+    "displayName": "SRH14"
+  },
+  {
+    "id": "SRH15",
+    "modelCode": "SRH15",
+    "family": "SRH",
+    "displayName": "SRH15"
+  },
+  {
+    "id": "SRH15F_2_Bunks",
+    "modelCode": "SRH15F 2 Bunks",
+    "family": "SRH",
+    "displayName": "SRH15F 2 Bunks"
+  },
+  {
+    "id": "SRH16",
+    "modelCode": "SRH16",
+    "family": "SRH",
+    "displayName": "SRH16"
+  },
+  {
+    "id": "SRH16F_1_Bunk",
+    "modelCode": "SRH16F 1 Bunk",
+    "family": "SRH",
+    "displayName": "SRH16F 1 Bunk"
+  },
+  {
+    "id": "SRS9",
+    "modelCode": "SRS9",
+    "family": "SRS",
+    "displayName": "SRS9"
+  },
+  {
+    "id": "SRL206",
+    "modelCode": "SRL206",
+    "family": "SRL",
+    "displayName": "SRL206"
+  },
+  {
+    "id": "SRL216S",
+    "modelCode": "SRL216S",
+    "family": "SRL",
+    "displayName": "SRL216S"
+  },
+  {
+    "id": "SRL220S",
+    "modelCode": "SRL220S",
+    "family": "SRL",
+    "displayName": "SRL220S"
+  },
+  {
+    "id": "SRL236",
+    "modelCode": "SRL236",
+    "family": "SRL",
+    "displayName": "SRL236"
+  },
+  {
+    "id": "NGB19",
+    "modelCode": "NGB19",
+    "family": "NGB",
+    "displayName": "NGB19"
+  },
+  {
+    "id": "NGB20",
+    "modelCode": "NGB20",
+    "family": "NGB",
+    "displayName": "NGB20"
+  },
+  {
+    "id": "NGB21F_2_Bunks",
+    "modelCode": "NGB21F 2 Bunks",
+    "family": "NGB",
+    "displayName": "NGB21F 2 Bunks"
+  },
+  {
+    "id": "NGB21F_3_Bunks",
+    "modelCode": "NGB21F 3 Bunks",
+    "family": "NGB",
+    "displayName": "NGB21F 3 Bunks"
+  },
+  {
+    "id": "NGB21S",
+    "modelCode": "NGB21S",
+    "family": "NGB",
+    "displayName": "NGB21S"
+  },
+  {
+    "id": "NGC16",
+    "modelCode": "NGC16",
+    "family": "NGC",
+    "displayName": "NGC16"
+  },
+  {
+    "id": "NGC18",
+    "modelCode": "NGC18",
+    "family": "NGC",
+    "displayName": "NGC18"
+  },
+  {
+    "id": "NGC19",
+    "modelCode": "NGC19",
+    "family": "NGC",
+    "displayName": "NGC19"
+  },
+  {
+    "id": "NGC19F_2_Bunks",
+    "modelCode": "NGC19F 2 Bunks",
+    "family": "NGC",
+    "displayName": "NGC19F 2 Bunks"
+  },
+  {
+    "id": "NGC19F_3_Bunks",
+    "modelCode": "NGC19F 3 Bunks",
+    "family": "NGC",
+    "displayName": "NGC19F 3 Bunks"
+  },
+  {
+    "id": "NGC20",
+    "modelCode": "NGC20",
+    "family": "NGC",
+    "displayName": "NGC20"
+  },
+  {
+    "id": "NGC21S",
+    "modelCode": "NGC21S",
+    "family": "NGC",
+    "displayName": "NGC21S"
+  },
+  {
+    "id": "NGC22F_2_Bunks",
+    "modelCode": "NGC22F 2 Bunks",
+    "family": "NGC",
+    "displayName": "NGC22F 2 Bunks"
+  },
+  {
+    "id": "NGC22F_3_Bunks",
+    "modelCode": "NGC22F 3 Bunks",
+    "family": "NGC",
+    "displayName": "NGC22F 3 Bunks"
+  },
+  {
+    "id": "NGC24",
+    "modelCode": "NGC24",
+    "family": "NGC",
+    "displayName": "NGC24"
+  }
+]
