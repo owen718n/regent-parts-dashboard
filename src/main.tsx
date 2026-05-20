@@ -100,7 +100,7 @@ function App() {
         <section className="hero">
           <div>
             <p className="eyebrow">Firestore structure demo</p>
-            <h1>Regent Parts Interactive Dashboard</h1>
+            <h1>Installation Transfer</h1>
             <p className="subtitle">Loading data from Firestore...</p>
           </div>
         </section>
@@ -114,7 +114,7 @@ function App() {
         <section className="hero">
           <div>
             <p className="eyebrow">Firestore structure demo</p>
-            <h1>Regent Parts Interactive Dashboard</h1>
+            <h1>Installation Transfer</h1>
             <p className="subtitle">{error}</p>
           </div>
         </section>
@@ -155,7 +155,7 @@ function App() {
       <section className="hero">
         <div>
           <p className="eyebrow">Firestore structure demo</p>
-          <h1>Regent Parts Interactive Dashboard</h1>
+          <h1>Installation Transfer</h1>
           <p className="subtitle">
             基于 Data5.xlsm 自动转换：parts + bomItems + models + imports。
             当前页面已经改为从 Firebase Firestore 读取数据。
