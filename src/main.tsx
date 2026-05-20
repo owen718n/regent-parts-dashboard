@@ -77,6 +77,20 @@ type FamilyAverageBomItem = {
   usedInModels: string;
 };
 
+type FamilyAverageBomDraft = {
+  key: string;
+  partId: string;
+  sapCode: string | null;
+  description: string | null;
+  source: string | null;
+  location: string | null;
+  group: string | null;
+  standard: string;
+  time: number | null;
+  totalQty: number;
+  usedModelsSet: Set<string>;
+};
+
 const LOCATION_OPTIONS = [
   'Chassis',
   'Plumbing',
@@ -272,7 +286,11 @@ function App() {
   const visibleBomItems = React.useMemo(
     () =>
       bomItems.filter(item => {
-        const part = getPartForBom(item);
+        const part =
+          partById.get(item.partId) ||
+          partBySapCode.get(String(item.sapCode || '')) ||
+          null;
+
         return !part?.hidden;
       }),
     [bomItems, partById, partBySapCode]
@@ -323,8 +341,10 @@ function App() {
     const part = getPartForBom(item);
 
     const okModel = selectedModel === 'ALL' || item.model === selectedModel;
+
     const okSource =
-      selectedSource === 'ALL' || (part?.source || item.source || 'Unknown') === selectedSource;
+      selectedSource === 'ALL' ||
+      (part?.source || item.source || 'Unknown') === selectedSource;
 
     const k = keyword.trim().toLowerCase();
 
@@ -370,7 +390,9 @@ function App() {
           })
           .reduce((acc, item) => {
             const part = getPartForBom(item);
-            const key = String(item.sapCode || item.partId || item.description || '').trim();
+            const key = String(
+              item.sapCode || item.partId || item.description || ''
+            ).trim();
 
             if (!key) return acc;
 
@@ -395,21 +417,39 @@ function App() {
             acc[key].totalQty += qty;
             acc[key].usedModelsSet.add(item.model);
 
-            if (!acc[key].partId && part?.id) acc[key].partId = part.id;
-            if (!acc[key].sapCode && item.sapCode) acc[key].sapCode = item.sapCode;
+            if (!acc[key].partId && part?.id) {
+              acc[key].partId = part.id;
+            }
+
+            if (!acc[key].sapCode && item.sapCode) {
+              acc[key].sapCode = item.sapCode;
+            }
+
             if (!acc[key].description && item.description) {
               acc[key].description = item.description;
             }
+
             if (!acc[key].source && (part?.source || item.source)) {
               acc[key].source = part?.source || item.source;
             }
-            if (!acc[key].location && part?.location) acc[key].location = part.location;
-            if (!acc[key].group && part?.group) acc[key].group = part.group;
-            if (!acc[key].time && getPartTime(part)) acc[key].time = getPartTime(part);
+
+            if (!acc[key].location && part?.location) {
+              acc[key].location = part.location;
+            }
+
+            if (!acc[key].group && part?.group) {
+              acc[key].group = part.group;
+            }
+
+            const partTime = getPartTime(part);
+            if (acc[key].time === null && partTime !== null) {
+              acc[key].time = partTime;
+            }
+
             acc[key].standard = getPartStandard(part);
 
             return acc;
-          }, {} as Record<string, FamilyAverageBomItem & { usedModelsSet: Set<string> }>)
+          }, {} as Record<string, FamilyAverageBomDraft>)
       )
         .map(item => ({
           key: item.key,
@@ -427,7 +467,9 @@ function App() {
           ),
           usedInModels: Array.from(item.usedModelsSet).sort().join(', '),
         }))
-        .sort((a, b) => String(a.sapCode || '').localeCompare(String(b.sapCode || '')))
+        .sort((a, b) =>
+          String(a.sapCode || '').localeCompare(String(b.sapCode || ''))
+        )
     : [];
 
   const sourceStats = sources.map(source => ({
@@ -724,7 +766,9 @@ function App() {
                         onChange={queuePartUpdate}
                       />
                       <td>
-                        <span className="tag">{asText(part?.source || item.source)}</span>
+                        <span className="tag">
+                          {asText(part?.source || item.source)}
+                        </span>
                       </td>
                       <td>
                         <button
