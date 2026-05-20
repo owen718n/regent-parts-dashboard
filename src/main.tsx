@@ -61,7 +61,6 @@ function App() {
 
   const [selectedModel, setSelectedModel] = React.useState('ALL');
   const [selectedSource, setSelectedSource] = React.useState('ALL');
-  const [selectedFamily, setSelectedFamily] = React.useState('ALL');
   const [keyword, setKeyword] = React.useState('');
 
   const [loading, setLoading] = React.useState(true);
@@ -126,69 +125,18 @@ function App() {
   const sources = unique(parts.map(p => p.source || 'Unknown'));
   const families = unique(models.map(m => m.family));
 
-  const familyModelCodes = React.useMemo(() => {
-    if (selectedFamily === 'ALL') return [] as string[];
-    return models.filter(m => m.family === selectedFamily).map(m => m.modelCode);
-  }, [models, selectedFamily]);
+  const filteredBom = bomItems.filter(item => {
+    const okModel = selectedModel === 'ALL' || item.model === selectedModel;
+    const okSource = selectedSource === 'ALL' || (item.source || 'Unknown') === selectedSource;
 
-  const filteredBom = React.useMemo(() => {
-    if (selectedFamily !== 'ALL') {
-      const familyModelSet = new Set(familyModelCodes);
-      const modelCount = familyModelCodes.length;
-      if (modelCount === 0) return [];
+    const k = keyword.trim().toLowerCase();
+    const okKeyword =
+      !k ||
+      [item.sapCode, item.description, item.location, item.group, item.model]
+        .some(v => String(v || '').toLowerCase().includes(k));
 
-      const grouped = new Map<string, BomItem & { qty: number }>();
-      const qtyByPartModel = new Map<string, number>();
-
-      bomItems.forEach(item => {
-        if (!familyModelSet.has(item.model)) return;
-        const qty = Number(item.qty);
-        const normalizedQty = Number.isFinite(qty) ? qty : 0;
-        const pmKey = `${item.partId}|${item.model}`;
-        qtyByPartModel.set(pmKey, (qtyByPartModel.get(pmKey) || 0) + normalizedQty);
-
-        if (!grouped.has(item.partId)) {
-          grouped.set(item.partId, { ...item, qty: 0 });
-        }
-      });
-
-      qtyByPartModel.forEach((value, key) => {
-        const [partId] = key.split('|');
-        const base = grouped.get(partId);
-        if (!base) return;
-        base.qty = Number(base.qty) + value;
-      });
-
-      const k = keyword.trim().toLowerCase();
-      return Array.from(grouped.values())
-        .map(item => ({
-          ...item,
-          model: selectedFamily,
-          qty: Number((Number(item.qty) / modelCount).toFixed(1)),
-        }))
-        .filter(item => {
-          const okSource = selectedSource === 'ALL' || (item.source || 'Unknown') === selectedSource;
-          const okKeyword =
-            !k ||
-            [item.sapCode, item.description, item.location, item.group, item.model]
-              .some(v => String(v || '').toLowerCase().includes(k));
-          return okSource && okKeyword;
-        });
-    }
-
-    return bomItems.filter(item => {
-      const okModel = selectedModel === 'ALL' || item.model === selectedModel;
-      const okSource = selectedSource === 'ALL' || (item.source || 'Unknown') === selectedSource;
-
-      const k = keyword.trim().toLowerCase();
-      const okKeyword =
-        !k ||
-        [item.sapCode, item.description, item.location, item.group, item.model]
-          .some(v => String(v || '').toLowerCase().includes(k));
-
-      return okModel && okSource && okKeyword;
-    });
-  }, [bomItems, familyModelCodes, keyword, models, selectedFamily, selectedModel, selectedSource]);
+    return okModel && okSource && okKeyword;
+  });
 
   const sourceStats = sources.map(source => ({
     source,
@@ -247,20 +195,10 @@ function App() {
 
         <Card title="车型族">
           <div className="pillbox">
-            <button
-              className={`pill ${selectedFamily === 'ALL' ? 'active' : ''}`}
-              onClick={() => setSelectedFamily('ALL')}
-            >
-              全部车型族
-            </button>
             {families.map(f => (
-              <button
-                className={`pill ${selectedFamily === f ? 'active' : ''}`}
-                key={f}
-                onClick={() => setSelectedFamily(f)}
-              >
+              <span className="pill" key={f}>
                 {f}
-              </button>
+              </span>
             ))}
           </div>
         </Card>
@@ -336,9 +274,7 @@ function App() {
 
         <p className="note">
           Showing {Math.min(filteredBom.length, 500)} / {filteredBom.length}.
-          {selectedFamily === 'ALL'
-            ? ' 如果数据继续变大，可以改成 Firestore 分页查询。'
-            : ` 当前为车型族 ${selectedFamily} 的按车型平均值（Qty 精确到 1 位小数）。`}
+          如果数据继续变大，可以改成 Firestore 分页查询。
         </p>
       </section>
 
