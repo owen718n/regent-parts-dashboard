@@ -537,7 +537,7 @@ function App() {
     : [];
 
   const modelTimeCardTitle = selectedFamily
-    ? `${selectedFamily} 车型族各具体车型 total installation time`
+    ? `${selectedFamily} family model total installation time`
     : 'Model total installation time';
 
   const showingCount = selectedFamily
@@ -553,9 +553,9 @@ function App() {
           <p className="eyebrow">Firestore structure demo</p>
           <h1>Installation Transfer</h1>
           <p className="subtitle">
-            基于 Data5.xlsm 自动转换：parts + bomItems + models + imports。
-            当前页面从 Firebase Firestore 读取数据，并支持在网站上维护 Location、
-            Group、Time、Standard 和 Hidden。
+            Automatically converted from Data5.xlsm: parts + bomItems + models + imports.
+            This page reads from Firebase Firestore and supports in-site maintenance of Location,
+            Group, Time, Standard, and Hidden fields.
           </p>
         </div>
 
@@ -578,7 +578,7 @@ function App() {
       </section>
 
       <section className="grid two">
-        <Card title="Source 结构">
+        <Card title="Source Breakdown">
           {sourceStats.map(s => (
             <div className="bar-row" key={s.source}>
               <span>{s.source}</span>
@@ -597,7 +597,7 @@ function App() {
           ))}
         </Card>
 
-        <Card title="车型族">
+        <Card title="Model Families">
           <div className="pillbox">
             {families.map(f => (
               <button
@@ -618,7 +618,7 @@ function App() {
             <div className="family-summary">
               <strong>{selectedFamily}</strong>
               <span>
-                包含 {selectedFamilyModels.length} 个具体车型：
+                Includes {selectedFamilyModels.length} specific models:
                 {selectedFamilyModels.join(', ')}
               </span>
               <button
@@ -705,9 +705,9 @@ function App() {
 
         {selectedFamily && (
           <div className="mode-banner">
-            当前为 <strong>{selectedFamily}</strong> 车型族平均 BOM 模式。
-            Qty = 该零件在 {selectedFamily} 所有具体车型中的总用量 ÷{' '}
-            {selectedFamily} 具体车型数量，结果保留 1 位小数。
+            Currently showing <strong>{selectedFamily}</strong> family average BOM mode.
+            Qty = total usage of this part across all {selectedFamily} specific models ÷{' '}
+            number of {selectedFamily} specific models, rounded to 1 decimal place.
           </div>
         )}
 
@@ -809,7 +809,7 @@ function App() {
         <p className="note">
           Showing {showingCount} / {totalCount}.
           {selectedFamily
-            ? ' 当前显示的是车型族平均 BOM。'
+            ? ' Currently showing family average BOM.'
             : ' Hidden parts will not be shown or counted in statistics.'}
         </p>
       </section>
