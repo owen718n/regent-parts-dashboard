@@ -39,13 +39,6 @@ export type PartManualFields = Partial<{
   group: string | null;
   time: number | null;
   standard: "Standard" | "Option";
-  status: "Not Start" | "Transfer" | "Keep" | null;
-  reason:
-    | "Container limitation"
-    | "Parts availability"
-    | "Compliance"
-    | "Quality Risk Control"
-    | null;
   hidden: boolean;
 }>;
 
