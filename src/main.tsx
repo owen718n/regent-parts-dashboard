@@ -28,8 +28,6 @@ type Part = {
   location?: string | null;
   source: string | null;
   standard?: string | null;
-  status?: string | null;
-  reason?: string | null;
   time?: string | number | null;
   hidden?: boolean;
   originalRow: number;
@@ -103,13 +101,6 @@ const LOCATION_OPTIONS = [
 ];
 
 const STANDARD_OPTIONS = ['Standard', 'Option'] as const;
-const STATUS_OPTIONS = ['Not Start', 'Transfer', 'Keep'] as const;
-const REASON_OPTIONS = [
-  'Container limitation',
-  'Parts availability',
-  'Compliance',
-  'Quality Risk Control',
-] as const;
 
 function unique<T>(items: T[]) {
   return Array.from(new Set(items)).filter(Boolean) as T[];
@@ -366,8 +357,6 @@ function App() {
         part?.group,
         part?.standard,
         item.model,
-        part?.status,
-        part?.reason,
       ].some(v => String(v || '').toLowerCase().includes(k));
 
     return okModel && okSource && okKeyword;
@@ -566,7 +555,7 @@ function App() {
           <p className="subtitle">
             Automatically converted from Data5.xlsm: parts + bomItems + models + imports.
             This page reads from Firebase Firestore and supports in-site maintenance of Location,
-            Group, Time, Standard, Status, Reason, and Hidden fields.
+            Group, Time, Standard, and Hidden fields.
           </p>
         </div>
 
@@ -734,8 +723,6 @@ function App() {
                 <th>Group</th>
                 <th>Time Sec</th>
                 <th>Standard</th>
-                <th>Status</th>
-                <th>Reason</th>
                 <th>Source</th>
                 {selectedFamily && <th>Used In Models</th>}
                 <th>Action</th>
@@ -760,8 +747,6 @@ function App() {
                         saving={!!savingParts[partId]}
                         onChange={queuePartUpdate}
                       />
-                      <td>{asText(part?.status)}</td>
-                      <td>{asText(part?.reason)}</td>
                       <td>
                         <span className="tag">{asText(item.source)}</span>
                       </td>
@@ -797,8 +782,6 @@ function App() {
                         saving={!!savingParts[partId]}
                         onChange={queuePartUpdate}
                       />
-                      <td>{asText(part?.status)}</td>
-                      <td>{asText(part?.reason)}</td>
                       <td>
                         <span className="tag">
                           {asText(part?.source || item.source)}
@@ -910,8 +893,6 @@ function EditableManualCells({
   const group = part?.group || '';
   const time = part?.time ?? '';
   const standard = getPartStandard(part);
-  const status = part?.status || '';
-  const reason = part?.reason || '';
 
   return (
     <>
@@ -967,57 +948,18 @@ function EditableManualCells({
       </td>
 
       <td>
-        <select
-          className="cell-select"
-          value={standard}
-          onChange={e =>
-            onChange(partId, {
-              standard: e.target.value as 'Standard' | 'Option',
-            })
-          }
-          disabled={!partId}
-        >
-          {STANDARD_OPTIONS.map(option => (
-            <option value={option} key={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </td>
-      <td>
-        <select
-          className="cell-select"
-          value={status}
-          onChange={e =>
-            onChange(partId, {
-              status: (e.target.value || null) as PartManualFields['status'],
-            })
-          }
-          disabled={!partId}
-        >
-          <option value="">-</option>
-          {STATUS_OPTIONS.map(option => (
-            <option value={option} key={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </td>
-
-      <td>
         <div className="standard-cell">
           <select
             className="cell-select"
-            value={reason}
+            value={standard}
             onChange={e =>
               onChange(partId, {
-                reason: (e.target.value || null) as PartManualFields['reason'],
+                standard: e.target.value as 'Standard' | 'Option',
               })
             }
             disabled={!partId}
           >
-            <option value="">-</option>
-            {REASON_OPTIONS.map(option => (
+            {STANDARD_OPTIONS.map(option => (
               <option value={option} key={option}>
                 {option}
               </option>
@@ -1026,7 +968,6 @@ function EditableManualCells({
           {saving && <span className="saving-dot" title="Saving..." />}
         </div>
       </td>
-
     </>
   );
 }
