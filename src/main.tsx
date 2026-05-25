@@ -892,6 +892,7 @@ function EditableManualCells({
   const location = part?.location || '';
   const group = part?.group || '';
   const time = part?.time ?? '';
+  const isTimeEmpty = time === '';
   const standard = getPartStandard(part);
 
   return (
@@ -932,7 +933,7 @@ function EditableManualCells({
 
       <td>
         <input
-          className="cell-input small"
+          className={`cell-input small ${isTimeEmpty ? 'cell-input-warning' : ''}`}
           value={time}
           type="number"
           min="0"
