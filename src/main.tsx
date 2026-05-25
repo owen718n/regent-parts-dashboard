@@ -29,6 +29,7 @@ type Part = {
   source: string | null;
   standard?: string | null;
   time?: string | number | null;
+  finishDate?: string | null;
   hidden?: boolean;
   originalRow: number;
 };
@@ -356,6 +357,7 @@ function App() {
         part?.location,
         part?.group,
         part?.standard,
+        part?.finishDate,
         item.model,
       ].some(v => String(v || '').toLowerCase().includes(k));
 
@@ -383,6 +385,7 @@ function App() {
                 part?.location,
                 part?.group,
                 part?.standard,
+                part?.finishDate,
                 item.model,
               ].some(v => String(v || '').toLowerCase().includes(k));
 
@@ -555,7 +558,7 @@ function App() {
           <p className="subtitle">
             Automatically converted from Data5.xlsm: parts + bomItems + models + imports.
             This page reads from Firebase Firestore and supports in-site maintenance of Location,
-            Group, Time, Standard, and Hidden fields.
+            Group, Time, Standard, Finish Date, and Hidden fields.
           </p>
         </div>
 
@@ -723,6 +726,7 @@ function App() {
                 <th>Group</th>
                 <th>Time Sec</th>
                 <th>Standard</th>
+                <th>Finish Date</th>
                 <th>Source</th>
                 {selectedFamily && <th>Used In Models</th>}
                 <th>Action</th>
@@ -894,6 +898,7 @@ function EditableManualCells({
   const time = part?.time ?? '';
   const isTimeEmpty = time === '';
   const standard = getPartStandard(part);
+  const finishDate = part?.finishDate || '';
 
   return (
     <>
@@ -968,6 +973,20 @@ function EditableManualCells({
           </select>
           {saving && <span className="saving-dot" title="Saving..." />}
         </div>
+      </td>
+
+      <td>
+        <input
+          className="cell-input"
+          value={finishDate}
+          type="month"
+          onChange={e =>
+            onChange(partId, {
+              finishDate: e.target.value || null,
+            })
+          }
+          disabled={!partId}
+        />
       </td>
     </>
   );
