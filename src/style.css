@@ -400,13 +400,29 @@ td {
   font-size: 14px;
 }
 
+
 th {
   color: #52637d;
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.3;
+}
+
+.col-qty {
+  width: 74px;
+  min-width: 74px;
+}
+
+.col-finish-date {
+  width: 108px;
+  min-width: 108px;
+}
+
+.finish-date-input {
+  min-width: 92px;
 }
 
 td {
