@@ -417,12 +417,16 @@ th {
 }
 
 .col-finish-date {
-  width: 108px;
-  min-width: 108px;
+  width: 62px;
+  min-width: 62px;
 }
 
-.finish-date-input {
-  min-width: 92px;
+.finish-date-display {
+  display: inline-block;
+  min-width: 38px;
+  font-weight: 600;
+  color: #44526a;
+  cursor: help;
 }
 
 td {

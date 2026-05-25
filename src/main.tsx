@@ -111,6 +111,22 @@ function asText(v: unknown) {
   return v === null || v === undefined || v === '' ? '-' : String(v);
 }
 
+function formatFinishDateValue(value?: string | null) {
+  if (!value) return { month: '-', tooltip: 'No finish date' };
+  const [year, month] = value.split('-');
+  const monthNumber = Number(month);
+  if (!year || !Number.isFinite(monthNumber) || monthNumber < 1 || monthNumber > 12) {
+    return { month: value, tooltip: value };
+  }
+  const monthShort = new Date(Number(year), monthNumber - 1, 1).toLocaleString('en-US', {
+    month: 'short',
+  });
+  return {
+    month: monthShort,
+    tooltip: `${monthShort} ${year}`,
+  };
+}
+
 function toNumber(v: unknown) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -899,6 +915,7 @@ function EditableManualCells({
   const isTimeEmpty = time === '';
   const standard = getPartStandard(part);
   const finishDate = part?.finishDate || '';
+  const finishDateLabel = formatFinishDateValue(finishDate);
 
   return (
     <>
@@ -976,17 +993,9 @@ function EditableManualCells({
       </td>
 
       <td className="col-finish-date">
-        <input
-          className="cell-input finish-date-input"
-          value={finishDate}
-          type="month"
-          onChange={e =>
-            onChange(partId, {
-              finishDate: e.target.value || null,
-            })
-          }
-          disabled={!partId}
-        />
+        <span className="finish-date-display" title={finishDateLabel.tooltip}>
+          {finishDateLabel.month}
+        </span>
       </td>
     </>
   );
