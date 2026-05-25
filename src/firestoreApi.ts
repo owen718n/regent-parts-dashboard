@@ -39,6 +39,7 @@ export type PartManualFields = Partial<{
   group: string | null;
   time: number | null;
   standard: "Standard" | "Option";
+  finishDate: string | null;
   hidden: boolean;
 }>;
 
