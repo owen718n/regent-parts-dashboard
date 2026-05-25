@@ -721,12 +721,12 @@ function App() {
                 <th>{selectedFamily ? 'Family' : 'Model'}</th>
                 <th>SAP Code</th>
                 <th>Description</th>
-                <th>{selectedFamily ? 'Average Qty' : 'Qty'}</th>
+                <th className="col-qty">{selectedFamily ? 'Average Qty' : 'Qty'}</th>
                 <th>Location</th>
                 <th>Group</th>
                 <th>Time Sec</th>
                 <th>Standard</th>
-                <th>Finish Date</th>
+                <th className="col-finish-date">Finish Date</th>
                 <th>Source</th>
                 {selectedFamily && <th>Used In Models</th>}
                 <th>Action</th>
@@ -744,7 +744,7 @@ function App() {
                       <td>{selectedFamily}</td>
                       <td>{asText(item.sapCode)}</td>
                       <td>{asText(item.description)}</td>
-                      <td>{item.averageQty.toFixed(1)}</td>
+                      <td className="col-qty">{item.averageQty.toFixed(1)}</td>
                       <EditableManualCells
                         part={part}
                         partId={partId}
@@ -779,7 +779,7 @@ function App() {
                       <td>{item.model}</td>
                       <td>{asText(item.sapCode)}</td>
                       <td>{asText(item.description)}</td>
-                      <td>{asText(item.qty)}</td>
+                      <td className="col-qty">{asText(item.qty)}</td>
                       <EditableManualCells
                         part={part}
                         partId={partId}
@@ -975,9 +975,9 @@ function EditableManualCells({
         </div>
       </td>
 
-      <td>
+      <td className="col-finish-date">
         <input
-          className="cell-input"
+          className="cell-input finish-date-input"
           value={finishDate}
           type="month"
           onChange={e =>
