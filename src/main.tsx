@@ -102,6 +102,34 @@ const LOCATION_OPTIONS = [
 ];
 
 const STANDARD_OPTIONS = ['Standard', 'Option'] as const;
+const MONTH_OPTIONS = [
+  { value: '01', label: 'Jan' },
+  { value: '02', label: 'Feb' },
+  { value: '03', label: 'Mar' },
+  { value: '04', label: 'Apr' },
+  { value: '05', label: 'May' },
+  { value: '06', label: 'Jun' },
+  { value: '07', label: 'Jul' },
+  { value: '08', label: 'Aug' },
+  { value: '09', label: 'Sep' },
+  { value: '10', label: 'Oct' },
+  { value: '11', label: 'Nov' },
+  { value: '12', label: 'Dec' },
+] as const;
+
+
+function parseFinishDate(value: string | null | undefined) {
+  if (!value) return { year: '', month: '' };
+  const matched = /^(\d{4})-(\d{2})$/.exec(value);
+  if (!matched) return { year: '', month: '' };
+  return { year: matched[1], month: matched[2] };
+}
+
+function getFinishDateHoverText(value: string | null | undefined) {
+  const { year, month } = parseFinishDate(value);
+  const monthLabel = MONTH_OPTIONS.find(item => item.value === month)?.label;
+  return monthLabel && year ? `${monthLabel} ${year}` : '';
+}
 
 function unique<T>(items: T[]) {
   return Array.from(new Set(items)).filter(Boolean) as T[];
@@ -899,6 +927,8 @@ function EditableManualCells({
   const isTimeEmpty = time === '';
   const standard = getPartStandard(part);
   const finishDate = part?.finishDate || '';
+  const { year: finishYear, month: finishMonth } = parseFinishDate(finishDate);
+  const finishDateHoverText = getFinishDateHoverText(finishDate);
 
   return (
     <>
@@ -976,17 +1006,30 @@ function EditableManualCells({
       </td>
 
       <td className="col-finish-date">
-        <input
-          className="cell-input finish-date-input"
-          value={finishDate}
-          type="month"
-          onChange={e =>
+        <select
+          className="cell-select finish-date-select"
+          value={finishMonth}
+          title={finishDateHoverText}
+          onChange={e => {
+            const month = e.target.value;
+            if (!month) {
+              onChange(partId, { finishDate: null });
+              return;
+            }
+            const year = finishYear || String(new Date().getUTCFullYear());
             onChange(partId, {
-              finishDate: e.target.value || null,
-            })
-          }
+              finishDate: `${year}-${month}`,
+            });
+          }}
           disabled={!partId}
-        />
+        >
+          <option value="">-</option>
+          {MONTH_OPTIONS.map(option => (
+            <option value={option.value} key={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </td>
     </>
   );
