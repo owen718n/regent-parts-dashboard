@@ -740,3 +740,13 @@ tbody tr:hover {
     grid-template-columns: 64px minmax(0, 1fr) 76px;
   }
 }
+
+.used-models {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-clamp: 2;
+  max-width: 260px;
+  line-height: 1.4;
+}

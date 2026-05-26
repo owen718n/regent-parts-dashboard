@@ -782,7 +782,11 @@ function App() {
                       <td>
                         <span className="tag">{asText(item.source)}</span>
                       </td>
-                      <td>{item.usedInModels}</td>
+                      <td>
+                        <span className="used-models" title={item.usedInModels}>
+                          {item.usedInModels}
+                        </span>
+                      </td>
                       <td>
                         <button
                           type="button"
