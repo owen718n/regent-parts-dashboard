@@ -754,7 +754,10 @@ function App() {
                 <th>Group</th>
                 <th>Time Sec</th>
                 <th>Standard</th>
-                <th className="col-finish-date">Finish Date</th>
+                <th className="col-finish-date">
+                  <span>Finish</span>
+                  <span>Date</span>
+                </th>
                 <th>Source</th>
                 {selectedFamily && <th>Used In Models</th>}
                 <th>Hide</th>
