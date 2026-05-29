@@ -74,12 +74,12 @@ rows.slice(1).forEach((raw, i) => {
 
   /**
    * 注意：
-   * 这里故意不输出 group/location/standard/time/hidden。
+   * 这里故意不输出 group/location/standard/time/finishDate/status/reason/hidden。
    *
    * 原因：
    * 这些字段以后由网站人工维护。
    * import-to-firestore.mjs 使用 { merge: true } 上传。
-   * 如果这里继续输出 group/location/standard/time，
+   * 如果这里继续输出 group/location/standard/time/finishDate/status/reason，
    * 下次 Excel 导入就会覆盖网站上手动修改过的值。
    */
   parts.push({
@@ -98,7 +98,7 @@ rows.slice(1).forEach((raw, i) => {
     }
 
     /**
-     * bomItems 也不要再保存 location/group/time/standard。
+     * bomItems 也不要再保存 location/group/time/standard/finishDate/status/reason。
      * 页面显示时应该通过 partId 去 parts 里面拿最新人工维护字段。
      */
     bomItems.push({
@@ -146,5 +146,5 @@ console.log(
   `Converted ${parts.length} parts, ${models.length} models, ${bomItems.length} bomItems.`
 );
 console.log(
-  'Manual fields are protected: location/group/time/standard/hidden are not exported from Excel.'
+  'Manual fields are protected: location/group/time/standard/finishDate/status/reason/hidden are not exported from Excel.'
 );
