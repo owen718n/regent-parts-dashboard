@@ -757,7 +757,7 @@ function App() {
                 <th className="col-finish-date">Finish Date</th>
                 <th>Source</th>
                 {selectedFamily && <th>Used In Models</th>}
-                <th>Action</th>
+                <th>Hide</th>
               </tr>
             </thead>
 
@@ -793,9 +793,10 @@ function App() {
                           className="icon-action danger"
                           onClick={() => queuePartUpdate(partId, { hidden: true })}
                           disabled={!partId}
+                          aria-label="Hide"
+                          title="Hide"
                         >
                           <EyeOff size={15} />
-                          Hide
                         </button>
                       </td>
                     </tr>
@@ -829,9 +830,10 @@ function App() {
                           className="icon-action danger"
                           onClick={() => queuePartUpdate(partId, { hidden: true })}
                           disabled={!partId}
+                          aria-label="Hide"
+                          title="Hide"
                         >
                           <EyeOff size={15} />
-                          Hide
                         </button>
                       </td>
                     </tr>
