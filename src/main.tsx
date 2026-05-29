@@ -30,6 +30,8 @@ type Part = {
   standard?: string | null;
   time?: string | number | null;
   finishDate?: string | null;
+  status?: PartStatus | null;
+  reason?: PartReason | null;
   hidden?: boolean;
   originalRow: number;
 };
@@ -63,6 +65,9 @@ type ImportInfo = {
   importedAt?: string;
 };
 
+type PartStatus = (typeof STATUS_OPTIONS)[number];
+type PartReason = (typeof REASON_OPTIONS)[number];
+
 type FamilyAverageBomItem = {
   key: string;
   partId: string;
@@ -73,6 +78,8 @@ type FamilyAverageBomItem = {
   group: string | null;
   standard: string;
   time: number | null;
+  status: PartStatus | null;
+  reason: PartReason | null;
   totalQty: number;
   averageQty: number;
   usedInModels: string;
@@ -88,6 +95,8 @@ type FamilyAverageBomDraft = {
   group: string | null;
   standard: string;
   time: number | null;
+  status: PartStatus | null;
+  reason: PartReason | null;
   totalQty: number;
   usedModelsSet: Set<string>;
 };
@@ -102,6 +111,13 @@ const LOCATION_OPTIONS = [
 ];
 
 const STANDARD_OPTIONS = ['Standard', 'Option'] as const;
+const STATUS_OPTIONS = ['Not Start', 'Transfer', 'Keep'] as const;
+const REASON_OPTIONS = [
+  'Container limitation',
+  'Parts availability',
+  'Compliance',
+  'Quality Risk Control',
+] as const;
 const MONTH_OPTIONS = [
   { value: '01', label: 'Jan' },
   { value: '02', label: 'Feb' },
@@ -386,6 +402,8 @@ function App() {
         part?.group,
         part?.standard,
         part?.finishDate,
+        part?.status,
+        part?.reason,
         item.model,
       ].some(v => String(v || '').toLowerCase().includes(k));
 
@@ -414,6 +432,8 @@ function App() {
                 part?.group,
                 part?.standard,
                 part?.finishDate,
+                part?.status,
+                part?.reason,
                 item.model,
               ].some(v => String(v || '').toLowerCase().includes(k));
 
@@ -440,6 +460,8 @@ function App() {
                 group: part?.group || null,
                 standard: getPartStandard(part),
                 time: getPartTime(part),
+                status: part?.status || null,
+                reason: part?.reason || null,
                 totalQty: 0,
                 usedModelsSet: new Set<string>(),
               };
@@ -472,6 +494,14 @@ function App() {
               acc[key].group = part.group;
             }
 
+            if (!acc[key].status && part?.status) {
+              acc[key].status = part.status;
+            }
+
+            if (!acc[key].reason && part?.reason) {
+              acc[key].reason = part.reason;
+            }
+
             const partTime = getPartTime(part);
             if (acc[key].time === null && partTime !== null) {
               acc[key].time = partTime;
@@ -492,6 +522,8 @@ function App() {
           group: item.group,
           standard: item.standard,
           time: item.time,
+          status: item.status,
+          reason: item.reason,
           totalQty: item.totalQty,
           averageQty: Number(
             (item.totalQty / Math.max(selectedFamilyModels.length, 1)).toFixed(1)
@@ -586,7 +618,7 @@ function App() {
           <p className="subtitle">
             Automatically converted from Data5.xlsm: parts + bomItems + models + imports.
             This page reads from Firebase Firestore and supports in-site maintenance of Location,
-            Group, Time, Standard, Finish Date, and Hidden fields.
+            Group, Time, Standard, Finish Date, Status, Reason, and Hidden fields.
           </p>
         </div>
 
@@ -727,7 +759,7 @@ function App() {
           <label className="searchbox">
             Search
             <input
-              placeholder="SAP Code / Description / Location / Group"
+              placeholder="SAP Code / Description / Location / Group / Status / Reason"
               value={keyword}
               onChange={e => setKeyword(e.target.value)}
             />
@@ -758,6 +790,8 @@ function App() {
                   <span>Finish</span>
                   <span>Date</span>
                 </th>
+                <th className="col-status">Status</th>
+                <th className="col-reason">Reason</th>
                 <th>Source</th>
                 {selectedFamily && <th>Used In Models</th>}
                 <th>Hide</th>
@@ -936,6 +970,8 @@ function EditableManualCells({
   const isTimeEmpty = time === '';
   const standard = getPartStandard(part);
   const finishDate = part?.finishDate || '';
+  const status = part?.status || '';
+  const reason = part?.reason || '';
   const { year: finishYear, month: finishMonth } = parseFinishDate(finishDate);
   const finishDateHoverText = getFinishDateHoverText(finishDate);
 
@@ -1036,6 +1072,47 @@ function EditableManualCells({
           {MONTH_OPTIONS.map(option => (
             <option value={option.value} key={option.value}>
               {option.label}
+            </option>
+          ))}
+        </select>
+      </td>
+
+      <td className="col-status">
+        <select
+          className="cell-select status-select"
+          value={status}
+          onChange={e =>
+            onChange(partId, {
+              status: (e.target.value || null) as PartStatus | null,
+            })
+          }
+          disabled={!partId}
+        >
+          <option value="">-</option>
+          {STATUS_OPTIONS.map(option => (
+            <option value={option} key={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </td>
+
+      <td className="col-reason">
+        <select
+          className="cell-select reason-select"
+          value={reason}
+          title={reason}
+          onChange={e =>
+            onChange(partId, {
+              reason: (e.target.value || null) as PartReason | null,
+            })
+          }
+          disabled={!partId}
+        >
+          <option value="">-</option>
+          {REASON_OPTIONS.map(option => (
+            <option value={option} key={option}>
+              {option}
             </option>
           ))}
         </select>

@@ -383,7 +383,7 @@ h1 {
 
 table {
   width: 100%;
-  min-width: 1220px;
+  min-width: 1420px;
   border-collapse: collapse;
 }
 
@@ -425,8 +425,22 @@ th.col-finish-date span {
   min-width: 60px;
 }
 
+.col-status {
+  width: 92px;
+  min-width: 92px;
+}
+
+.col-reason {
+  width: 132px;
+  min-width: 132px;
+}
+
 th.col-finish-date,
-td.col-finish-date {
+td.col-finish-date,
+th.col-status,
+td.col-status,
+th.col-reason,
+td.col-reason {
   padding-left: 6px;
   padding-right: 6px;
 }
@@ -460,6 +474,20 @@ tbody tr:hover {
   min-width: 50px;
   max-width: 50px;
   padding: 0 4px;
+  border-radius: 8px;
+}
+
+.status-select {
+  min-width: 80px;
+  max-width: 80px;
+  padding: 0 6px;
+  border-radius: 8px;
+}
+
+.reason-select {
+  min-width: 120px;
+  max-width: 120px;
+  padding: 0 6px;
   border-radius: 8px;
 }
 
