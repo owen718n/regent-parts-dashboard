@@ -110,7 +110,10 @@ const LOCATION_OPTIONS = [
   'External',
 ];
 
-const STANDARD_OPTIONS = ['Standard', 'Option'] as const;
+const STANDARD_OPTIONS = [
+  { value: 'Standard', label: 'S' },
+  { value: 'Option', label: 'O' },
+] as const;
 const STATUS_OPTIONS = ['Not Start', 'Transfer', 'Keep'] as const;
 const REASON_OPTIONS = [
   'Container limitation',
@@ -783,9 +786,9 @@ function App() {
                 <th>Description</th>
                 <th className="col-qty">{selectedFamily ? 'Average Qty' : 'Qty'}</th>
                 <th>Location</th>
-                <th>Group</th>
+                <th className="col-group">Group</th>
                 <th>Time Sec</th>
-                <th>Standard</th>
+                <th className="col-standard">Standard</th>
                 <th className="col-finish-date">
                   <span>Finish</span>
                   <span>Date</span>
@@ -997,9 +1000,9 @@ function EditableManualCells({
         </select>
       </td>
 
-      <td>
+      <td className="col-group">
         <input
-          className="cell-input"
+          className="cell-input group-input"
           value={group}
           placeholder="Group"
           onChange={e =>
@@ -1028,7 +1031,7 @@ function EditableManualCells({
         />
       </td>
 
-      <td>
+      <td className="col-standard">
         <div className="standard-cell">
           <select
             className="cell-select"
@@ -1041,8 +1044,8 @@ function EditableManualCells({
             disabled={!partId}
           >
             {STANDARD_OPTIONS.map(option => (
-              <option value={option} key={option}>
-                {option}
+              <option value={option.value} key={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
