@@ -420,6 +420,16 @@ th.col-finish-date span {
   min-width: 74px;
 }
 
+.col-group {
+  width: 76px;
+  min-width: 76px;
+}
+
+.col-standard {
+  width: 44px;
+  min-width: 44px;
+}
+
 .col-finish-date {
   width: 60px;
   min-width: 60px;
@@ -435,6 +445,10 @@ th.col-finish-date span {
   min-width: 132px;
 }
 
+th.col-group,
+td.col-group,
+th.col-standard,
+td.col-standard,
 th.col-finish-date,
 td.col-finish-date,
 th.col-status,
@@ -491,6 +505,12 @@ tbody tr:hover {
   border-radius: 8px;
 }
 
+.group-input {
+  min-width: 64px;
+  max-width: 64px;
+  padding: 0 6px;
+}
+
 .cell-input.small {
   min-width: 86px;
   max-width: 110px;
@@ -509,7 +529,14 @@ tbody tr:hover {
 .standard-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+}
+
+.standard-cell .cell-select {
+  min-width: 32px;
+  max-width: 32px;
+  padding: 0 2px;
+  border-radius: 8px;
 }
 
 .saving-dot {
