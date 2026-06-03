@@ -375,7 +375,7 @@ h1 {
 
 .table-wrap {
   width: 100%;
-  overflow: auto;
+  overflow-x: hidden;
   border-radius: 18px;
   border: 1px solid #e1e8f4;
   background: #ffffff;
@@ -383,7 +383,8 @@ h1 {
 
 table {
   width: 100%;
-  min-width: 1420px;
+  min-width: 0;
+  table-layout: fixed;
   border-collapse: collapse;
 }
 
@@ -393,17 +394,18 @@ thead {
 
 th,
 td {
-  padding: 12px 12px;
+  padding: 8px 6px;
   border-bottom: 1px solid #edf1f7;
   text-align: left;
   vertical-align: top;
-  font-size: 14px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
 }
 
 
 th {
   color: #52637d;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -415,34 +417,61 @@ th.col-finish-date span {
   display: block;
 }
 
+
+.col-model {
+  width: 5%;
+}
+
+.col-sap {
+  width: 7%;
+}
+
+.col-description {
+  width: 16%;
+}
+
+.col-location {
+  width: 8%;
+}
+
+.col-time {
+  width: 6%;
+}
+
+.col-source {
+  width: 7%;
+}
+
+.col-used-models {
+  width: 10%;
+}
+
+.col-hide {
+  width: 4%;
+}
+
 .col-qty {
-  width: 74px;
-  min-width: 74px;
+  width: 5%;
 }
 
 .col-group {
-  width: 76px;
-  min-width: 76px;
+  width: 5%;
 }
 
 .col-standard {
-  width: 44px;
-  min-width: 44px;
+  width: 5%;
 }
 
 .col-finish-date {
-  width: 60px;
-  min-width: 60px;
+  width: 5%;
 }
 
 .col-status {
-  width: 92px;
-  min-width: 92px;
+  width: 7%;
 }
 
 .col-reason {
-  width: 132px;
-  min-width: 132px;
+  width: 9%;
 }
 
 th.col-group,
@@ -470,9 +499,9 @@ tbody tr:hover {
 .cell-input,
 .cell-select {
   width: 100%;
-  min-width: 120px;
+  min-width: 0;
   height: 34px;
-  padding: 0 10px;
+  padding: 0 6px;
   border-radius: 10px;
   border: 1px solid #d9e1ed;
   background: #ffffff;
@@ -485,35 +514,35 @@ tbody tr:hover {
 }
 
 .finish-date-select {
-  min-width: 50px;
-  max-width: 50px;
+  min-width: 0;
+  max-width: 100%;
   padding: 0 4px;
   border-radius: 8px;
 }
 
 .status-select {
-  min-width: 80px;
-  max-width: 80px;
-  padding: 0 6px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 4px;
   border-radius: 8px;
 }
 
 .reason-select {
-  min-width: 120px;
-  max-width: 120px;
-  padding: 0 6px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0 4px;
   border-radius: 8px;
 }
 
 .group-input {
-  min-width: 64px;
-  max-width: 64px;
+  min-width: 0;
+  max-width: 100%;
   padding: 0 6px;
 }
 
 .cell-input.small {
-  min-width: 86px;
-  max-width: 110px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .cell-input-warning {
@@ -533,8 +562,8 @@ tbody tr:hover {
 }
 
 .standard-cell .cell-select {
-  min-width: 32px;
-  max-width: 32px;
+  min-width: 0;
+  max-width: 100%;
   padding: 0 2px;
   border-radius: 8px;
 }
@@ -575,8 +604,10 @@ tbody tr:hover {
   background: #eef2ff;
   color: #2946a3;
   font-weight: 750;
+  max-width: 100%;
   font-size: 12px;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .icon-action {

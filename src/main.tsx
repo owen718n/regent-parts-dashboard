@@ -781,13 +781,13 @@ function App() {
           <table>
             <thead>
               <tr>
-                <th>{selectedFamily ? 'Family' : 'Model'}</th>
-                <th>SAP Code</th>
-                <th>Description</th>
+                <th className="col-model">{selectedFamily ? 'Family' : 'Model'}</th>
+                <th className="col-sap">SAP Code</th>
+                <th className="col-description">Description</th>
                 <th className="col-qty">{selectedFamily ? 'Average Qty' : 'Qty'}</th>
-                <th>Location</th>
+                <th className="col-location">Location</th>
                 <th className="col-group">Group</th>
-                <th>Time Sec</th>
+                <th className="col-time">Time Sec</th>
                 <th className="col-standard">Standard</th>
                 <th className="col-finish-date">
                   <span>Finish</span>
@@ -795,9 +795,9 @@ function App() {
                 </th>
                 <th className="col-status">Status</th>
                 <th className="col-reason">Reason</th>
-                <th>Source</th>
-                {selectedFamily && <th>Used In Models</th>}
-                <th>Hide</th>
+                <th className="col-source">Source</th>
+                {selectedFamily && <th className="col-used-models">Used In Models</th>}
+                <th className="col-hide">Hide</th>
               </tr>
             </thead>
 
@@ -809,9 +809,9 @@ function App() {
 
                   return (
                     <tr key={`${item.key}-${i}`}>
-                      <td>{selectedFamily}</td>
-                      <td>{asText(item.sapCode)}</td>
-                      <td>{asText(item.description)}</td>
+                      <td className="col-model">{selectedFamily}</td>
+                      <td className="col-sap">{asText(item.sapCode)}</td>
+                      <td className="col-description">{asText(item.description)}</td>
                       <td className="col-qty">{item.averageQty.toFixed(1)}</td>
                       <EditableManualCells
                         part={part}
@@ -819,15 +819,15 @@ function App() {
                         saving={!!savingParts[partId]}
                         onChange={queuePartUpdate}
                       />
-                      <td>
+                      <td className="col-source">
                         <span className="tag">{asText(item.source)}</span>
                       </td>
-                      <td>
+                      <td className="col-used-models">
                         <span className="used-models" title={item.usedInModels}>
                           {item.usedInModels}
                         </span>
                       </td>
-                      <td>
+                      <td className="col-hide">
                         <button
                           type="button"
                           className="icon-action danger"
@@ -849,9 +849,9 @@ function App() {
 
                   return (
                     <tr key={`${item.partId || item.sapCode}-${item.model}-${i}`}>
-                      <td>{item.model}</td>
-                      <td>{asText(item.sapCode)}</td>
-                      <td>{asText(item.description)}</td>
+                      <td className="col-model">{item.model}</td>
+                      <td className="col-sap">{asText(item.sapCode)}</td>
+                      <td className="col-description">{asText(item.description)}</td>
                       <td className="col-qty">{asText(item.qty)}</td>
                       <EditableManualCells
                         part={part}
@@ -859,12 +859,12 @@ function App() {
                         saving={!!savingParts[partId]}
                         onChange={queuePartUpdate}
                       />
-                      <td>
+                      <td className="col-source">
                         <span className="tag">
                           {asText(part?.source || item.source)}
                         </span>
                       </td>
-                      <td>
+                      <td className="col-hide">
                         <button
                           type="button"
                           className="icon-action danger"
@@ -980,7 +980,7 @@ function EditableManualCells({
 
   return (
     <>
-      <td>
+      <td className="col-location">
         <select
           className="cell-select"
           value={location}
@@ -1014,7 +1014,7 @@ function EditableManualCells({
         />
       </td>
 
-      <td>
+      <td className="col-time">
         <input
           className={`cell-input small ${isTimeEmpty ? 'cell-input-warning' : ''}`}
           value={time}
